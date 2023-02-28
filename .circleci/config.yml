@@ -14,8 +14,9 @@ jobs:
     # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Install Packages
+          commande: npm i
       - run:
           name: Run Tests
           command: npm test
