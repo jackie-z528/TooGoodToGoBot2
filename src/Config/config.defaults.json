@@ -1,0 +1,12 @@
+{
+    "api": {
+        "auth": {
+            "email": ""
+        },
+        "session": {},
+        "deviceType": "IOS",
+        "headers": {
+            "User-Agent": "iPhone 14"
+        }
+    }
+}
