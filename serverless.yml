@@ -1,18 +1,57 @@
+org: jackiezhou
+app: too-good-to-go-bot
 service: too-good-to-go-bot
 frameworkVersion: '3'
+useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs16.x
+  environment:
+    TABLE_NAME: ${param:tableName}
+    REGION: ${param:awsRegion}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - { "Fn::GetAtt": ["TooGoodToGoBotTable", "Arn"] }
 
 functions:
-  rateHandler:
-    handler: index.run
+  login:
+    handler: src/Lambdas/LoginLambda.handler
+    url: true
     events:
-      # Invoke Lambda function every minute
-      - schedule: rate(1 minute)
-  cronHandler:
-    handler: index.run
+      - httpApi: '*'
+  refreshToken:
+    handler: src/Lambdas/RefreshTokenLambda.handler
+    url: true
     events:
-      # Invoke Lambda function every 2nd minute from Mon-Fri
-      - schedule: cron(0/2 * ? * MON-FRI *)
+      - schedule: rate(24 hours)
+resources:
+  Resources:
+    TooGoodToGoBotTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: key
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: key
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${param:tableName}
+
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
