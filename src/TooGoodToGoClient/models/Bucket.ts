@@ -3,7 +3,7 @@ export interface BucketItem {
     item_id: string;
     price_including_taxes: {
       code: string;
-      minor_unites: number;
+      minor_units: number;
       decimals: number;
     };
     cover_picture: Image;

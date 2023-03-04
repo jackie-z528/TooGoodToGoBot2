@@ -10,6 +10,7 @@ provider:
   environment:
     TABLE_NAME: ${param:tableName}
     REGION: ${param:awsRegion}
+    DISCORD_TOKEN: ${param:discordToken}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -30,9 +31,12 @@ functions:
       - httpApi: '*'
   refreshToken:
     handler: src/Lambdas/RefreshTokenLambda.handler
-    url: true
     events:
       - schedule: rate(24 hours)
+  pollFavorites:
+    handler: src/Lambdas/PollLambda.handler
+    events:
+      - schedule: rate(1 minute)
 resources:
   Resources:
     TooGoodToGoBotTable:

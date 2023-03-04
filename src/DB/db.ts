@@ -42,7 +42,10 @@ export class Db {
   public getUserId = async (): Promise<string> =>
     (await this.getItem("userId")).value;
 
-  public async getItem(key: string): Promise<Item> {
+  public getSubscribedChannels = async (): Promise<string[]> =>
+    (await this.getItem("subscribedChannels")).valueList?.values ?? [];
+
+  private getItem = async (key: string): Promise<Item> => {
     const params = {
       TableName: this.tableName,
       Key: {
@@ -54,17 +57,17 @@ export class Db {
       .promise()
       .then((item) => item.Item);
     return (item as Item) ?? throwItemNotFound();
-  }
+  };
 
-  private async putItem(item: Item): Promise<void> {
+  private putItem = async (item: Item): Promise<void> => {
     const params = {
       TableName: this.tableName,
       Item: item,
     };
     await this.dynamoInstance.put(params).promise();
-  }
+  };
 
-  public async getItems(keys: string[]): Promise<Item[]> {
+  public getItems = async (keys: string[]): Promise<Item[]> => {
     const keysObject = keys.map((key) => ({ key: key as AttributeValue }));
     const RequestItems: BatchGetRequestMap = {};
     RequestItems[this.tableName] = { Keys: keysObject };
@@ -76,14 +79,14 @@ export class Db {
     }
 
     return output.Responses[this.tableName] as Item[];
-  }
+  };
 
-  public async putItems(items: Item[]): Promise<void> {
+  public putItems = async (items: Item[]): Promise<void> => {
     const RequestItems: BatchWriteItemRequestMap = {};
     const writeRequests = items.map((item) => ({
       PutRequest: { Item: item as unknown as PutItemInputAttributeMap },
     }));
     RequestItems[this.tableName] = writeRequests;
     await this.dynamoInstance.batchWrite({ RequestItems }).promise();
-  }
+  };
 }
