@@ -74,8 +74,9 @@ export class Db {
     const output = await this.dynamoInstance
       .batchGet({ RequestItems })
       .promise();
+
     if (!output.Responses) {
-      return throwItemNotFound();
+      return [];
     }
 
     return output.Responses[this.tableName] as Item[];
