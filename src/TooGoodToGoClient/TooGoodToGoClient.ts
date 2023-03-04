@@ -76,8 +76,10 @@ export class TooGoodToGoClient {
   }
 
   public async getFavorites(): Promise<BucketItem[]> {
-    const accessToken = await this.db.getAccessToken();
-    const userId = await this.db.getUserId();
+    const [accessToken, userId] = await Promise.all([
+      this.db.getAccessToken(),
+      this.db.getUserId(),
+    ]);
     const bucketResponse: BucketResponse = await this.client
       .post("item/v8/", {
         json: {

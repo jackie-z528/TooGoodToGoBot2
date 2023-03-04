@@ -18,6 +18,8 @@ provider:
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
+        - dynamodb:BatchGetItem
+        - dynamodb:BatchWriteItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource:
