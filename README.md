@@ -37,4 +37,7 @@ To enable discord notifications, add the bot you created to a server of your cho
 
 ## Usage
 The bot will poll the Too Good To Go API every minute and send a notification to the subscribed channels whenever there is an increase in stock.
+
+<br>
+
 ![](notification_preview.png)
