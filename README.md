@@ -17,7 +17,7 @@ npm i
 Create a [discord application](https://discord.com/developers/applications) and a discord bot under the application. Make a note of the bot token somewhere.
 
 ### MongoDB
-Create a MongoDB Cluster and make a note of the connection url.
+Create a [MongoDB Cluster](https://www.mongodb.com/basics/clusters/mongodb-cluster-setup) and make a note of the connection url.
 
 ### Environment Variables
 Create a `.env` file and populate the following values:
