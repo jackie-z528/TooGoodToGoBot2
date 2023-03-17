@@ -33,11 +33,12 @@ export class TooGoodToGoClient {
       })
       .json();
     const { polling_id } = emailAuthResponse;
-    return this.db.upsertUser({
+    await this.db.upsertUser({
       email,
       pollingId: polling_id,
       subscribedChannel,
     });
+    this.db.close();
   }
 
   public async continueLogin(email: string): Promise<void> {
@@ -58,15 +59,19 @@ export class TooGoodToGoClient {
     console.log(pollAuthResponse);
     const { access_token, refresh_token } = pollAuthResponse;
     const { user_id } = pollAuthResponse.startup_data.user;
-    return this.db.upsertUser({
+
+    await this.db.upsertUser({
       email,
       accessToken: access_token,
       refreshToken: refresh_token,
       userId: user_id,
     });
+
+    this.db.close();
   }
 
   public async refreshTokens(): Promise<void> {
+    console.log("refreshing tokens");
     const users = await this.db.getUsers();
     const newUsers = await Promise.all(
       users.map(async (user) => {
@@ -81,6 +86,7 @@ export class TooGoodToGoClient {
     );
 
     await this.db.upsertUsers(compact(newUsers));
+    this.db.close();
   }
 
   private async refreshToken(user: User): Promise<RefreshResponse> {
