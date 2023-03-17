@@ -1,93 +1,83 @@
-import AWS from "aws-sdk";
-import {
-  BatchGetRequestMap,
-  BatchWriteItemRequestMap,
-  AttributeValue,
-  PutItemInputAttributeMap,
-} from "aws-sdk/clients/dynamodb";
+import { MongoClient } from "mongodb";
 import { Env } from "../Env";
-import { throwItemNotFound } from "./Error";
-import { Item } from "./models/Item";
-
+import { ItemCount } from "./models/ItemCount";
+import { User } from "./models/User";
 export class Db {
-  private dynamoInstance: AWS.DynamoDB.DocumentClient;
-  private tableName: string;
+  private client: MongoClient;
   constructor() {
-    AWS.config.update({ region: Env.AWS_REGION });
-    this.dynamoInstance = new AWS.DynamoDB.DocumentClient();
-    this.tableName = Env.TABLE_NAME;
+    this.client = new MongoClient(Env.DB_URL);
   }
 
-  public setPollingId = async (pollingId: string): Promise<void> =>
-    this.putItem({ key: "pollingId", value: pollingId });
-
-  public getPollingId = async (): Promise<string> =>
-    (await this.getItem("pollingId")).value;
-
-  public setAccessToken = async (accessToken: string): Promise<void> =>
-    this.putItem({ key: "accessToken", value: accessToken });
-
-  public getAccessToken = async (): Promise<string> =>
-    (await this.getItem("accessToken")).value;
-
-  public setRefreshToken = async (refreshToken: string): Promise<void> =>
-    this.putItem({ key: "refreshToken", value: refreshToken });
-
-  public getRefreshToken = async (): Promise<string> =>
-    (await this.getItem("refreshToken")).value;
-
-  public setUserId = async (userId: string): Promise<void> =>
-    this.putItem({ key: "userId", value: userId });
-
-  public getUserId = async (): Promise<string> =>
-    (await this.getItem("userId")).value;
-
-  public getSubscribedChannels = async (): Promise<string[]> =>
-    (await this.getItem("subscribedChannels")).valueList?.values ?? [];
-
-  private getItem = async (key: string): Promise<Item> => {
-    const params = {
-      TableName: this.tableName,
-      Key: {
-        key,
-      },
-    };
-    const item = await this.dynamoInstance
-      .get(params)
-      .promise()
-      .then((item) => item.Item);
-    return (item as Item) ?? throwItemNotFound();
-  };
-
-  private putItem = async (item: Item): Promise<void> => {
-    const params = {
-      TableName: this.tableName,
-      Item: item,
-    };
-    await this.dynamoInstance.put(params).promise();
-  };
-
-  public getItems = async (keys: string[]): Promise<Item[]> => {
-    const keysObject = keys.map((key) => ({ key: key as AttributeValue }));
-    const RequestItems: BatchGetRequestMap = {};
-    RequestItems[this.tableName] = { Keys: keysObject };
-    const output = await this.dynamoInstance
-      .batchGet({ RequestItems })
-      .promise();
-
-    if (!output.Responses) {
-      return [];
+  public upsertUser = async (user: Partial<User>): Promise<void> => {
+    if (!user.email) {
+      return;
     }
 
-    return output.Responses[this.tableName] as Item[];
+    await this.client.connect();
+    await this.client
+      .db()
+      .collection("User")
+      .updateOne({ email: user.email }, { $set: user }, { upsert: true });
+    return this.client.close();
   };
 
-  public putItems = async (items: Item[]): Promise<void> => {
-    const RequestItems: BatchWriteItemRequestMap = {};
-    const writeRequests = items.map((item) => ({
-      PutRequest: { Item: item as unknown as PutItemInputAttributeMap },
+  public upsertUsers = async (users: User[]): Promise<void> => {
+    const upsertRequests = users.map((user) => ({
+      updateOne: {
+        filter: { email: user.email },
+        update: user,
+        upsert: true,
+      },
     }));
-    RequestItems[this.tableName] = writeRequests;
-    await this.dynamoInstance.batchWrite({ RequestItems }).promise();
+
+    await this.client.connect();
+    await this.client.db().collection("User").bulkWrite(upsertRequests);
+    return this.client.close();
+  };
+
+  public getUser = async (email: string): Promise<User> => {
+    await this.client.connect();
+    const users = (await this.client
+      .db()
+      .collection("User")
+      .findOne({ email })) as unknown as User;
+    this.client.close();
+    return users;
+  };
+
+  public getUsers = async (): Promise<User[]> => {
+    await this.client.connect();
+    const users = (await this.client
+      .db()
+      .collection("User")
+      .find()
+      .toArray()) as unknown as User[];
+    this.client.close();
+    return users;
+  };
+
+  public upsertItemCounts = async (itemCounts: ItemCount[]): Promise<void> => {
+    const upsertRequests = itemCounts.map((itemCount) => ({
+      updateOne: {
+        filter: { id: itemCount.id },
+        update: itemCount,
+        upsert: true,
+      },
+    }));
+
+    await this.client.connect();
+    await this.client.db().collection("ItemCount").bulkWrite(upsertRequests);
+    return this.client.close();
+  };
+
+  public getItemCounts = async (): Promise<ItemCount[]> => {
+    await this.client.connect();
+    const itemCounts = (await this.client
+      .db()
+      .collection("ItemCount")
+      .find()
+      .toArray()) as unknown as ItemCount[];
+    this.client.close();
+    return itemCounts;
   };
 }
