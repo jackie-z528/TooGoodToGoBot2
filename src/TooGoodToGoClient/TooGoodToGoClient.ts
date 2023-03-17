@@ -26,14 +26,18 @@ export class TooGoodToGoClient {
     this.db = new Db();
   }
 
-  public async login(email: string): Promise<void> {
+  public async login(email: string, subscribedChannel: string): Promise<void> {
     const emailAuthResponse: EmailAuthResponse = await this.client
       .post(`${BASE_AUTH_URL}/authByEmail`, {
         json: { email, device_type: "IOS" },
       })
       .json();
     const { polling_id } = emailAuthResponse;
-    return this.db.upsertUser({ email, pollingId: polling_id });
+    return this.db.upsertUser({
+      email,
+      pollingId: polling_id,
+      subscribedChannel,
+    });
   }
 
   public async continueLogin(email: string): Promise<void> {
