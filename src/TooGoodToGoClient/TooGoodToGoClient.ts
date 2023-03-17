@@ -9,21 +9,20 @@ import { gotScraping, Got } from "got-scraping";
 import { CookieJar } from "tough-cookie";
 import { User } from "../DB/models/User";
 import { compact } from "lodash";
+import { SingletonDB } from "../DB/SingletonDB";
 
 const BASE_AUTH_URL = "auth/v3";
 const BASE_URL = "https://apptoogoodtogo.com/api/";
 
 export class TooGoodToGoClient {
   private client: Got;
-  private db: Db;
+  private db: Db = SingletonDB;
 
   constructor() {
     this.client = gotScraping.extend({
       prefixUrl: BASE_URL,
       cookieJar: new CookieJar(),
     });
-
-    this.db = new Db();
   }
 
   public async login(email: string, subscribedChannel: string): Promise<void> {
@@ -38,7 +37,6 @@ export class TooGoodToGoClient {
       pollingId: polling_id,
       subscribedChannel,
     });
-    this.db.close();
   }
 
   public async continueLogin(email: string): Promise<void> {
@@ -67,7 +65,6 @@ export class TooGoodToGoClient {
       userId: user_id,
     });
 
-    this.db.close();
   }
 
   public async refreshTokens(): Promise<void> {
@@ -86,7 +83,6 @@ export class TooGoodToGoClient {
     );
 
     await this.db.upsertUsers(compact(newUsers));
-    this.db.close();
   }
 
   private async refreshToken(user: User): Promise<RefreshResponse> {

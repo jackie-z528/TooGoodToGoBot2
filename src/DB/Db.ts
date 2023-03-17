@@ -17,7 +17,6 @@ export class Db {
       return;
     }
 
-    await this.client.connect();
     await this.client
       .db()
       .collection("User")
@@ -33,12 +32,10 @@ export class Db {
       },
     }));
 
-    await this.client.connect();
     await this.client.db().collection("User").bulkWrite(upsertRequests);
   };
 
   public getUser = async (email: string): Promise<User> => {
-    await this.client.connect();
     const users = (await this.client
       .db()
       .collection("User")
@@ -47,7 +44,6 @@ export class Db {
   };
 
   public getUsers = async (): Promise<User[]> => {
-    await this.client.connect();
     const users = (await this.client
       .db()
       .collection("User")
@@ -65,12 +61,10 @@ export class Db {
       },
     }));
 
-    await this.client.connect();
     await this.client.db().collection("ItemCount").bulkWrite(upsertRequests);
   };
 
   public getItemCounts = async (): Promise<ItemCount[]> => {
-    await this.client.connect();
     const itemCounts = (await this.client
       .db()
       .collection("ItemCount")
