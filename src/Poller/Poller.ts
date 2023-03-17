@@ -39,7 +39,7 @@ export const pollFavorites = async () => {
    const itemCountMap = _.keyBy(itemCounts, "id");
    const newItems = await Promise.all(validUsers.map((user) => pollUserFavorites(user, itemCountMap, client, discordClient)));
    const itemsToSave = _.chain(newItems).flatten().uniqBy((itemCount) => itemCount.id).value();
-   await db.upsertItemCounts(itemsToSave);
+   if (itemsToSave.length > 0) await db.upsertItemCounts(itemsToSave);
    db.close();
 };
 

@@ -121,6 +121,13 @@ export class TooGoodToGoClient {
         },
       })
       .json();
-    return bucketResponse.items;
+
+    if (!bucketResponse.items) {
+    	console.log(bucketResponse);
+        return [];
+    }
+
+    return bucketResponse.items
   }
 }
+

@@ -8,7 +8,7 @@ cron.schedule("* */24 * * *", () => {
    client.refreshTokens(); 
 })
 
-cron.schedule("*/10 * * * * *", () => {
+cron.schedule("*/20 * * * * *", () => {
    pollFavorites(); 
 })
 

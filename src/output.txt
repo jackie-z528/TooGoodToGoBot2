@@ -1,0 +1,12 @@
+node:internal/modules/cjs/loader:988
+  throw err;
+  ^
+
+Error: Cannot find module '/home/opc/TooGoodToGoBot2/src/build/index.js'
+    at Function.Module._resolveFilename (node:internal/modules/cjs/loader:985:15)
+    at Function.Module._load (node:internal/modules/cjs/loader:833:27)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:81:12)
+    at node:internal/main/run_main_module:22:47 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
