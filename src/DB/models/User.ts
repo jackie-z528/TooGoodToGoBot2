@@ -3,5 +3,6 @@ export interface User {
     pollingId: string,
     userId: string,
     accessToken: string,
-    refreshToken: string
+    refreshToken: string,
+    subscribedChannel?: string
 }
