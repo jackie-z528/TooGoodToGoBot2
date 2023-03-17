@@ -8,6 +8,10 @@ export class Db {
     this.client = new MongoClient(Env.DB_URL);
   }
 
+  public close = () => {
+    return this.client.close();
+  }
+
   public upsertUser = async (user: Partial<User>): Promise<void> => {
     if (!user.email) {
       return;
@@ -18,7 +22,6 @@ export class Db {
       .db()
       .collection("User")
       .updateOne({ email: user.email }, { $set: user }, { upsert: true });
-    return this.client.close();
   };
 
   public upsertUsers = async (users: User[]): Promise<void> => {
@@ -32,7 +35,6 @@ export class Db {
 
     await this.client.connect();
     await this.client.db().collection("User").bulkWrite(upsertRequests);
-    return this.client.close();
   };
 
   public getUser = async (email: string): Promise<User> => {
@@ -41,7 +43,6 @@ export class Db {
       .db()
       .collection("User")
       .findOne({ email })) as unknown as User;
-    this.client.close();
     return users;
   };
 
@@ -52,7 +53,6 @@ export class Db {
       .collection("User")
       .find()
       .toArray()) as unknown as User[];
-    this.client.close();
     return users;
   };
 
@@ -60,14 +60,13 @@ export class Db {
     const upsertRequests = itemCounts.map((itemCount) => ({
       updateOne: {
         filter: { id: itemCount.id },
-        update: itemCount,
+        update: {$set: itemCount},
         upsert: true,
       },
     }));
 
     await this.client.connect();
     await this.client.db().collection("ItemCount").bulkWrite(upsertRequests);
-    return this.client.close();
   };
 
   public getItemCounts = async (): Promise<ItemCount[]> => {
@@ -77,7 +76,6 @@ export class Db {
       .collection("ItemCount")
       .find()
       .toArray()) as unknown as ItemCount[];
-    this.client.close();
     return itemCounts;
   };
 }
