@@ -1,4 +1,4 @@
-import { Db } from "../DB/db";
+import { Db } from "../DB/Db";
 import {
   EmailAuthResponse,
   PollAuthResponse,
@@ -7,6 +7,8 @@ import {
 import { BucketItem, BucketResponse } from "./models/Bucket";
 import { gotScraping, Got } from "got-scraping";
 import { CookieJar } from "tough-cookie";
+import { User } from "../DB/models/User";
+import { compact } from "lodash";
 
 const BASE_AUTH_URL = "auth/v3";
 const BASE_URL = "https://apptoogoodtogo.com/api/";
@@ -31,11 +33,15 @@ export class TooGoodToGoClient {
       })
       .json();
     const { polling_id } = emailAuthResponse;
-    return this.db.setPollingId(polling_id);
+    return this.db.upsertUser({ email, pollingId: polling_id });
   }
 
   public async continueLogin(email: string): Promise<void> {
-    const polling_id = await this.db.getPollingId();
+    const user = await this.db.getUser(email);
+    if (!user || !user.pollingId) {
+      throw new Error("User not found");
+    }
+    const { pollingId: polling_id } = user;
     const pollAuthResponse: PollAuthResponse = await this.client
       .post(`${BASE_AUTH_URL}/authByRequestPollingId`, {
         json: {
@@ -45,20 +51,38 @@ export class TooGoodToGoClient {
         },
       })
       .json();
+    console.log(pollAuthResponse);
     const { access_token, refresh_token } = pollAuthResponse;
     const { user_id } = pollAuthResponse.startup_data.user;
-    await Promise.all([
-      this.db.setAccessToken(access_token),
-      this.db.setRefreshToken(refresh_token),
-      this.db.setUserId(user_id),
-    ]);
+    return this.db.upsertUser({
+      email,
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      userId: user_id,
+    });
   }
 
-  public async refreshToken(): Promise<void> {
-    const refreshToken = await this.db.getRefreshToken();
-    let refreshResponse: RefreshResponse;
+  public async refreshTokens(): Promise<void> {
+    const users = await this.db.getUsers();
+    const newUsers = await Promise.all(
+      users.map(async (user) => {
+        if (!user.refreshToken) return;
+        const { access_token, refresh_token } = await this.refreshToken(user);
+        return {
+          ...user,
+          accessToken: access_token,
+          refreshToken: refresh_token,
+        };
+      })
+    );
+
+    await this.db.upsertUsers(compact(newUsers));
+  }
+
+  private async refreshToken(user: User): Promise<RefreshResponse> {
+    const { refreshToken } = user;
     try {
-      refreshResponse = await this.client
+      return this.client
         .post(`${BASE_AUTH_URL}/token/refresh`, {
           json: { refresh_token: refreshToken },
         })
@@ -67,19 +91,10 @@ export class TooGoodToGoClient {
       console.error(err);
       throw err;
     }
-    console.log(refreshResponse);
-    const { access_token, refresh_token } = refreshResponse;
-    await Promise.all([
-      this.db.setAccessToken(access_token),
-      this.db.setRefreshToken(refresh_token),
-    ]);
   }
 
-  public async getFavorites(): Promise<BucketItem[]> {
-    const [accessToken, userId] = await Promise.all([
-      this.db.getAccessToken(),
-      this.db.getUserId(),
-    ]);
+  public async getFavorites(user: User): Promise<BucketItem[]> {
+    const { accessToken, userId } = user;
     const bucketResponse: BucketResponse = await this.client
       .post("item/v8/", {
         json: {
