@@ -7,6 +7,7 @@ import { buildRestockEmbed } from "../DiscordBot/EmbedUtils";
 import { BucketItem } from "../TooGoodToGoClient/models/Bucket";
 import { DiscordClient } from "../DiscordBot/DiscordClient";
 import { SingletonDB } from "../DB/SingletonDB";
+import { SingletonDiscordClient } from "../DiscordBot/SingletonClient";
 
 const pollUserFavorites = async (user: User, itemCountMap: Dictionary<ItemCount>, client = new TooGoodToGoClient(), discordClient = new DiscordClient()): Promise<ItemCount[]> => {
     if (!user.subscribedChannel) return [];
@@ -33,7 +34,7 @@ const pollUserFavorites = async (user: User, itemCountMap: Dictionary<ItemCount>
 export const pollFavorites = async () => {
    const db = SingletonDB; 
    const client = new TooGoodToGoClient();
-   const discordClient = new DiscordClient();
+   const discordClient = SingletonDiscordClient;
 
    const [ users, itemCounts ] = await Promise.all([db.getUsers(), db.getItemCounts(), discordClient.login()]);
    const validUsers = _.filter(users, (user) => Boolean(user.accessToken && user.userId && user.subscribedChannel));
