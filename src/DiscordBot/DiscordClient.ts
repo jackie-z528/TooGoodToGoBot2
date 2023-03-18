@@ -4,25 +4,15 @@ import {
   EmbedBuilder,
   TextChannel,
 } from "discord.js";
-import { Env } from "../Env";
 import * as _ from "lodash";
 
-export class DiscordClient {
-  private client: Client;
+export class DiscordClient extends Client {
   constructor() {
-    this.client = new Client({ intents: [GatewayIntentBits.Guilds] });
-  }
-
-  public async login() {
-    return this.client.login(Env.DISCORD_TOKEN);
-  }
-
-  public async logout() {
-    return this.client.destroy();
+    super({ intents: [GatewayIntentBits.Guilds] });
   }
 
   public async sendEmbeds(embeds: EmbedBuilder[], channelId: string) {
-    const channel = (await this.client.channels.fetch(
+    const channel = (await this.channels.fetch(
       channelId
     )) as unknown as TextChannel;
     const chunkedEmbeds = _.chunk(embeds, 10);

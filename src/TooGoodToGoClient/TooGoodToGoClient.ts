@@ -64,7 +64,6 @@ export class TooGoodToGoClient {
       refreshToken: refresh_token,
       userId: user_id,
     });
-
   }
 
   public async refreshTokens(): Promise<void> {
@@ -119,11 +118,10 @@ export class TooGoodToGoClient {
       .json();
 
     if (!bucketResponse.items) {
-    	console.log(bucketResponse);
-        return [];
+      console.log(bucketResponse);
+      return [];
     }
 
-    return bucketResponse.items
+    return bucketResponse.items;
   }
 }
-

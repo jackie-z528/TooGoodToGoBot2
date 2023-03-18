@@ -10,7 +10,7 @@ export class Db {
 
   public close = () => {
     return this.client.close();
-  }
+  };
 
   public upsertUser = async (user: Partial<User>): Promise<void> => {
     if (!user.email) {
@@ -56,7 +56,7 @@ export class Db {
     const upsertRequests = itemCounts.map((itemCount) => ({
       updateOne: {
         filter: { id: itemCount.id },
-        update: {$set: itemCount},
+        update: { $set: itemCount },
         upsert: true,
       },
     }));

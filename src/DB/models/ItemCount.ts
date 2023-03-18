@@ -1,4 +1,4 @@
 export interface ItemCount {
-    id: string
-    count: number
+  id: string;
+  count: number;
 }

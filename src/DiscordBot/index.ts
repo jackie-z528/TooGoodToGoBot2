@@ -1,10 +1,11 @@
-import { Client, Collection, GatewayIntentBits, Events } from "discord.js";
+import { Collection, Events } from "discord.js";
 import { commands } from "./commands/Commands";
 import { Command } from "./commands/models/Command";
 import { Env } from "../Env";
+import { DiscordClient } from "./DiscordClient";
 
-export const start = () => {
-  const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+export const start = (): Promise<DiscordClient> => {
+  const client = new DiscordClient();
 
   const clientCommands = new Collection<string, Command>();
   commands.forEach((command) => {
@@ -27,5 +28,5 @@ export const start = () => {
     }
   });
 
-  client.login(Env.DISCORD_TOKEN);
+  return client.login(Env.DISCORD_TOKEN).then(() => client);
 };
