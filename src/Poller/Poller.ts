@@ -41,7 +41,6 @@ export const pollFavorites = async (discordClient: DiscordClient) => {
   const [users, itemCounts] = await Promise.all([
     db.getUsers(),
     db.getItemCounts(),
-    discordClient.login(),
   ]);
   const validUsers = _.filter(users, (user) =>
     Boolean(user.accessToken && user.userId && user.subscribedChannel)

@@ -8,6 +8,8 @@ cron.schedule("* */24 * * *", () => {
   client.refreshTokens();
 });
 
-start().then((discordClient) => cron.schedule("*/10 * * * * *", () => {
-   pollFavorites(discordClient);
-}));
+start().then((discordClient) =>
+  cron.schedule("*/10 * * * * *", () => {
+    pollFavorites(discordClient);
+  })
+);
