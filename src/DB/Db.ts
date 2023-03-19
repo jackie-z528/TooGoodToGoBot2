@@ -27,7 +27,7 @@ export class Db {
     const upsertRequests = users.map((user) => ({
       updateOne: {
         filter: { email: user.email },
-        update: user,
+        update: { $set: user },
         upsert: true,
       },
     }));
