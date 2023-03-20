@@ -1,4 +1,4 @@
-# TooGoodToGoBot2
+# [TooGoodToGoBot2](https://github.com/jackie-z528/TooGoodToGoBot2)
 Too Good To Go is an app that looks to solve food waste by providing a platform to connect restaurants with excess food and consumers looking for great deals. I use the app frequently looking for deals on tasty food items that I would probably purchase at full price anyways. There's one feature the app is missing though; notifications.
 
 TooGoodToGoBot2 is my solution to this feature via a node service integrated with MongoDB and Discord. Note that TooGoodToGoBot2 is unaffiliated with Too Good To Go and any usage is done so at your own risk.
