@@ -67,6 +67,7 @@ export class TooGoodToGoClient {
         const refreshResponse = await this.refreshToken(user);
         console.log(refreshResponse);
         const { access_token, refresh_token } = refreshResponse;
+	if (!access_token || !refresh_token) return;
         return {
           ...user,
           accessToken: access_token,
