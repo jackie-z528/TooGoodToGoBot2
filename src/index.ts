@@ -3,6 +3,7 @@ import { TooGoodToGoClient } from "./TooGoodToGoClient/TooGoodToGoClient";
 import * as cron from "node-cron";
 import { pollFavorites } from "./Poller/Poller";
 const client = new TooGoodToGoClient();
+client.refreshTokens();
 // Refresh tokens every day
 cron.schedule("* */24 * * *", () => {
   client.refreshTokens();
