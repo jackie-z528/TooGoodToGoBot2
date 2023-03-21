@@ -1,10 +1,10 @@
-# TooGoodToGoBot2
+# [TooGoodToGoBot2](https://github.com/jackie-z528/TooGoodToGoBot2)
 Too Good To Go is an app that looks to solve food waste by providing a platform to connect restaurants with excess food and consumers looking for great deals. I use the app frequently looking for deals on tasty food items that I would probably purchase at full price anyways. There's one feature the app is missing though; notifications.
 
 TooGoodToGoBot2 is my solution to this feature via a node service integrated with MongoDB and Discord. Note that TooGoodToGoBot2 is unaffiliated with Too Good To Go and any usage is done so at your own risk.
 
 ## Setup
-In order to ensure that the bot doesn't get overloaded with accounts to poll, I am manually controlling adding the bot to a server. To use this bot, create an issue asking to add the bot to your server and I will add the bot for you depending on capacity. Currently an email can only be added to one channel, based on the channel `/login` is sent to the bot, which should suffice. If you would like to setup this application yourself, see the below details.
+In order to ensure that the bot doesn't get overloaded with accounts to poll, I am manually controlling adding the bot to a server. To use this bot, create an issue asking to add the bot to your server and I will add the bot for you depending on capacity. In a channel with the bot, `/login <email>` and `/continue-login <email>` to setup the poller for your account. Currently an email can only be added to one channel, based on the channel `/login` is sent to the bot, which should suffice. If you would like to setup this application yourself, see the below details.
 
 ### Installation
 Dependencies: Node.js, MongoDB, Discord
