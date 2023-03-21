@@ -72,7 +72,9 @@ export class TooGoodToGoClient {
     const newUsers = await Promise.all(
       users.map(async (user) => {
         if (!user.refreshToken) return;
-        const { access_token, refresh_token } = await this.refreshToken(user);
+        const refreshResponse = await this.refreshToken(user);
+        console.log(refreshResponse);
+        const { access_token, refresh_token } = refreshResponse;
         return {
           ...user,
           accessToken: access_token,
