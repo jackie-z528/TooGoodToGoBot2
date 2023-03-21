@@ -15,18 +15,10 @@ const BASE_AUTH_URL = "auth/v3";
 const BASE_URL = "https://apptoogoodtogo.com/api/";
 
 export class TooGoodToGoClient {
-  private client: Got;
   private db: Db = SingletonDB;
 
-  constructor() {
-    this.client = gotScraping.extend({
-      prefixUrl: BASE_URL,
-      cookieJar: new CookieJar(),
-    });
-  }
-
   public async login(email: string, subscribedChannel: string): Promise<void> {
-    const emailAuthResponse: EmailAuthResponse = await this.client
+    const emailAuthResponse: EmailAuthResponse = await this.newClient()
       .post(`${BASE_AUTH_URL}/authByEmail`, {
         json: { email, device_type: "IOS" },
       })
@@ -45,7 +37,7 @@ export class TooGoodToGoClient {
       throw new Error("User not found");
     }
     const { pollingId: polling_id } = user;
-    const pollAuthResponse: PollAuthResponse = await this.client
+    const pollAuthResponse: PollAuthResponse = await this.newClient()
       .post(`${BASE_AUTH_URL}/authByRequestPollingId`, {
         json: {
           request_polling_id: polling_id,
@@ -89,7 +81,7 @@ export class TooGoodToGoClient {
   private async refreshToken(user: User): Promise<RefreshResponse> {
     const { refreshToken } = user;
     try {
-      return this.client
+      return this.newClient()
         .post(`${BASE_AUTH_URL}/token/refresh`, {
           json: { refresh_token: refreshToken },
         })
@@ -102,7 +94,7 @@ export class TooGoodToGoClient {
 
   public async getFavorites(user: User): Promise<BucketItem[]> {
     const { accessToken, userId } = user;
-    const bucketResponse: BucketResponse = await this.client
+    const bucketResponse: BucketResponse = await this.newClient()
       .post("item/v8/", {
         json: {
           favorites_only: true,
@@ -126,4 +118,9 @@ export class TooGoodToGoClient {
 
     return bucketResponse.items;
   }
+
+  private newClient = (): Got => gotScraping.extend({
+    prefixUrl: BASE_URL,
+    cookieJar: new CookieJar(),
+  })
 }
