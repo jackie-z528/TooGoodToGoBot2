@@ -2,10 +2,15 @@ import { TooGoodToGoClient } from "../TooGoodToGoClient/TooGoodToGoClient";
 import _, { Dictionary } from "lodash";
 import { User } from "../DB/models/User";
 import { ItemCount } from "../DB/models/ItemCount";
-import { buildRestockEmbed } from "../DiscordBot/EmbedUtils";
+import {
+  buildOrderFailedEmbed,
+  buildOrderSuccessEmbed,
+  buildRestockEmbed,
+} from "../DiscordBot/EmbedUtils";
 import { BucketItem } from "../TooGoodToGoClient/models/Bucket";
 import { DiscordClient } from "../DiscordBot/DiscordClient";
 import { SingletonDB } from "../DB/SingletonDB";
+import { OrderResponse } from "./models/Order";
 
 const pollUserFavorites = async (
   user: User,
@@ -29,9 +34,62 @@ const pollUserFavorites = async (
 
   const embeds = restockedItems.map((item) => buildRestockEmbed(item));
 
-  await discordClient.sendEmbeds(embeds, user.subscribedChannel);
+  discordClient.sendEmbeds(embeds, user.subscribedChannel);
+
+  if (user.reserveFavorites)
+    reserveItems(restockedItems, user, discordClient, client);
 
   return newItems;
+};
+
+const reserveItems = async (
+  items: BucketItem[],
+  user: User,
+  discordClient: DiscordClient,
+  client = new TooGoodToGoClient(),
+  db = SingletonDB
+): Promise<void> => {
+  const { reservedItems, orderIds } = user;
+  const itemsToReserve = items.filter(
+    (item) => !reservedItems?.includes(item.item.item_id)
+  );
+  const orders = await Promise.allSettled(
+    itemsToReserve.map((item) => client.reserveItem(item, user))
+  );
+
+  const successfulOrders = orders.filter(
+    (order) => order.status === "fulfilled"
+  ) as PromiseFulfilledResult<OrderResponse>[];
+  const successEmbeds = successfulOrders.map((order) =>
+    buildOrderSuccessEmbed(order.value)
+  );
+
+  const failedOrders = orders.filter(
+    (order) => order.status === "rejected"
+  ) as PromiseRejectedResult[];
+  const failedEmbeds = failedOrders.map((order) =>
+    buildOrderFailedEmbed(order.reason)
+  );
+
+  discordClient.sendEmbeds(
+    [...successEmbeds, ...failedEmbeds],
+    user.subscribedChannel!
+  );
+
+  const newOrderIds = orderIds ?? [];
+  const newReservedItems = reservedItems ?? [];
+
+  successfulOrders.forEach((order) => {
+    const { orderId, item } = order.value;
+    newOrderIds.push(orderId);
+    newReservedItems.push(item.item.item_id);
+  });
+
+  db.upsertUser({
+    ...user,
+    reservedItems: newReservedItems,
+    orderIds: newOrderIds,
+  });
 };
 
 export const pollFavorites = async (discordClient: DiscordClient) => {
