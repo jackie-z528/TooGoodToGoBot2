@@ -4,7 +4,12 @@ import {
   PollAuthResponse,
   RefreshResponse,
 } from "./models/Auth";
-import { BucketItem, BucketResponse } from "./models/Bucket";
+import {
+  AbortResponse,
+  BucketItem,
+  BucketResponse,
+  OrderResponse,
+} from "./models/Bucket";
 import { gotScraping, Got } from "got-scraping";
 import { CookieJar } from "tough-cookie";
 import { User } from "../DB/models/User";
@@ -67,7 +72,7 @@ export class TooGoodToGoClient {
         const refreshResponse = await this.refreshToken(user);
         console.log(refreshResponse);
         const { access_token, refresh_token } = refreshResponse;
-	if (!access_token || !refresh_token) return;
+        if (!access_token || !refresh_token) return;
         return {
           ...user,
           accessToken: access_token,
@@ -120,8 +125,53 @@ export class TooGoodToGoClient {
     return bucketResponse.items;
   }
 
-  private newClient = (): Got => gotScraping.extend({
-    prefixUrl: BASE_URL,
-    cookieJar: new CookieJar(),
-  })
+  public async reserveItem(
+    item: BucketItem,
+    user: User
+  ): Promise<{ orderId: string; itemName: string }> {
+    const { accessToken } = user;
+    const orderResponse: OrderResponse = await this.newClient()
+      .post(`order/v7/create/${item.item.item_id}`, {
+        json: { item_count: 1 },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      .json();
+    console.log(orderResponse);
+    if (orderResponse.state === "SUCCESS") {
+      return {
+        orderId: orderResponse.order.id,
+        itemName: item.display_name,
+      };
+    } else {
+      throw new Error(`Order failed for ${item.display_name}`);
+    }
+  }
+
+  public async releaseItems(user: User): Promise<void> {
+    const { orderIds } = user;
+    if (!orderIds || orderIds.length === 0) return;
+
+    await Promise.all(
+      orderIds.map((orderId) => this.releaseItem(orderId, user))
+    );
+  }
+
+  public async releaseItem(orderId: string, user: User): Promise<void> {
+    const { accessToken } = user;
+    const abortResponse: AbortResponse = await this.newClient()
+      .post(`order/v7/${orderId}/abort`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      .json();
+    console.log(abortResponse);
+    if (abortResponse.state !== "SUCCESS") {
+      console.error("failed to release order");
+    }
+  }
+
+  private newClient = (): Got =>
+    gotScraping.extend({
+      prefixUrl: BASE_URL,
+      cookieJar: new CookieJar(),
+    });
 }
