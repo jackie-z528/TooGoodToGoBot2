@@ -128,7 +128,7 @@ export class TooGoodToGoClient {
   public async reserveItem(
     item: BucketItem,
     user: User
-  ): Promise<{ orderId: string; itemName: string }> {
+  ): Promise<{ orderId: string; item: BucketItem }> {
     const { accessToken } = user;
     const orderResponse: OrderResponse = await this.newClient()
       .post(`order/v7/create/${item.item.item_id}`, {
@@ -140,7 +140,7 @@ export class TooGoodToGoClient {
     if (orderResponse.state === "SUCCESS") {
       return {
         orderId: orderResponse.order.id,
-        itemName: item.display_name,
+        item,
       };
     } else {
       throw new Error(`Order failed for ${item.display_name}`);
