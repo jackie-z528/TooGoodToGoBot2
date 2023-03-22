@@ -25,7 +25,7 @@ export const buildRestockEmbed = (bucketItem: BucketItem): EmbedBuilder => {
 
 export const buildOrderSuccessEmbed = (order: OrderResponse): EmbedBuilder => {
   return new EmbedBuilder().setDescription(
-    `Successfully reserved ${order.itemName}`
+    `Successfully reserved ${order.item.display_name}`
   );
 };
 

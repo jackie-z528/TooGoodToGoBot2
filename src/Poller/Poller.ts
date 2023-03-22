@@ -46,10 +46,12 @@ const reserveItems = async (
   items: BucketItem[],
   user: User,
   discordClient: DiscordClient,
-  client = new TooGoodToGoClient()
+  client = new TooGoodToGoClient(),
+  db = SingletonDB
 ): Promise<void> => {
+  const { reservedItems, orderIds } = user;
   const itemsToReserve = items.filter(
-    (item) => !user.reservedItems?.includes(item.item.item_id)
+    (item) => !reservedItems?.includes(item.item.item_id)
   );
   const orders = await Promise.allSettled(
     itemsToReserve.map((item) => client.reserveItem(item, user))
@@ -73,6 +75,21 @@ const reserveItems = async (
     [...successEmbeds, ...failedEmbeds],
     user.subscribedChannel!
   );
+
+  const newOrderIds = orderIds ?? [];
+  const newReservedItems = reservedItems ?? [];
+
+  successfulOrders.forEach((order) => {
+    const { orderId, item } = order.value;
+    newOrderIds.push(orderId);
+    newReservedItems.push(item.item.item_id);
+  });
+
+  db.upsertUser({
+    ...user,
+    reservedItems: newReservedItems,
+    orderIds: newOrderIds,
+  });
 };
 
 export const pollFavorites = async (discordClient: DiscordClient) => {

@@ -1,4 +1,6 @@
+import { BucketItem } from "../../TooGoodToGoClient/models/Bucket";
+
 export interface OrderResponse {
   orderId: string;
-  itemName: string;
+  item: BucketItem;
 }
