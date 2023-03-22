@@ -154,6 +154,8 @@ export class TooGoodToGoClient {
     await Promise.all(
       orderIds.map((orderId) => this.releaseItem(orderId, user))
     );
+
+    this.db.upsertUser({ ...user, orderIds: [], reservedItems: []});
   }
 
   public async releaseItem(orderId: string, user: User): Promise<void> {
