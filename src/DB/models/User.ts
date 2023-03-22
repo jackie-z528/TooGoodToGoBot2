@@ -5,4 +5,7 @@ export interface User {
   accessToken: string;
   refreshToken: string;
   subscribedChannel?: string;
+  reserveFavorites?: boolean;
+  orderIds?: string[];
+  reservedItems?: string[];
 }

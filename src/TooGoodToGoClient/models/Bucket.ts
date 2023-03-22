@@ -20,3 +20,15 @@ export interface Image {
 export interface BucketResponse {
   items: BucketItem[];
 }
+
+export interface OrderResponse {
+  state: string;
+  order: {
+    id: string;
+    state: string;
+  };
+}
+
+export interface AbortResponse {
+  state: string;
+}

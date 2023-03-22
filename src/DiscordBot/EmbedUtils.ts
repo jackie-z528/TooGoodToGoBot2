@@ -1,5 +1,6 @@
 import { BucketItem } from "../TooGoodToGoClient/models/Bucket";
 import { EmbedBuilder } from "discord.js";
+import { OrderResponse } from "../Poller/models/Order";
 
 export const buildRestockEmbed = (bucketItem: BucketItem): EmbedBuilder => {
   const { item, display_name, items_available } = bucketItem;
@@ -20,4 +21,14 @@ export const buildRestockEmbed = (bucketItem: BucketItem): EmbedBuilder => {
       { name: "Price", value: price, inline: true }
     )
     .setImage(cover_picture.current_url);
+};
+
+export const buildOrderSuccessEmbed = (order: OrderResponse): EmbedBuilder => {
+  return new EmbedBuilder().setDescription(
+    `Successfully reserved ${order.itemName}`
+  );
+};
+
+export const buildOrderFailedEmbed = (reason: Error): EmbedBuilder => {
+  return new EmbedBuilder().setDescription(reason.message);
 };
