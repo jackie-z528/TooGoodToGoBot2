@@ -24,6 +24,7 @@ export class Db {
   };
 
   public upsertUsers = async (users: User[]): Promise<void> => {
+    if (users.length === 0) return;
     const upsertRequests = users.map((user) => ({
       updateOne: {
         filter: { email: user.email },
@@ -53,6 +54,7 @@ export class Db {
   };
 
   public upsertItemCounts = async (itemCounts: ItemCount[]): Promise<void> => {
+    if (itemCounts.length ===0) return;
     const upsertRequests = itemCounts.map((itemCount) => ({
       updateOne: {
         filter: { id: itemCount.id },
