@@ -87,8 +87,10 @@ export class TooGoodToGoClient {
   private async refreshToken(user: User): Promise<RefreshResponse> {
     const { refreshToken } = user;
     try {
-      return this.newClient()
-        .post(`${BASE_AUTH_URL}/token/refresh`, {
+      return gotScraping
+        .post({
+          url: `${BASE_AUTH_URL}/token/refresh`,
+          proxyUrl: "181.212.58.68:80",
           json: { refresh_token: refreshToken },
         })
         .json();
@@ -155,7 +157,7 @@ export class TooGoodToGoClient {
       orderIds.map((orderId) => this.releaseItem(orderId, user))
     );
 
-    this.db.upsertUser({ ...user, orderIds: [], reservedItems: []});
+    this.db.upsertUser({ ...user, orderIds: [], reservedItems: [] });
   }
 
   public async releaseItem(orderId: string, user: User): Promise<void> {

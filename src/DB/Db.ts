@@ -54,7 +54,7 @@ export class Db {
   };
 
   public upsertItemCounts = async (itemCounts: ItemCount[]): Promise<void> => {
-    if (itemCounts.length ===0) return;
+    if (itemCounts.length === 0) return;
     const upsertRequests = itemCounts.map((itemCount) => ({
       updateOne: {
         filter: { id: itemCount.id },
